@@ -1,206 +1,195 @@
-const mineflayer = require("mineflayer");
-const discord = require("discord.js");
-const config = require("./config/config.json");
-const options = require("./config/minecraft.json");
-const bot = require("./config/discord.json");
-require("colors");
+import { createBot } from 'mineflayer';
+import { Client, WebhookClient, RichEmbed } from 'discord.js';
+import { useWebhook, mentionEveryone, memberRole, prefix } from './config/config.json';
+import options from './config/minecraft.json';
+import { webhookID, webhookToken, guildID, channelID, logChannel, token } from './config/discord.json';
+import 'colors';
 
-const client = new discord.Client({
-    autoReconnect: true
-});
-const webhookClient = new discord.WebhookClient(bot.webhookID, bot.webhookToken);
+const client = new Client({ autoReconnect: true });
+const webhookClient = new WebhookClient(webhookID, webhookToken);
 
 // Start Discord Bot
-client.on("ready", () => {
-    console.log("Discord: Logged in.".bgBlue);
-    client.guilds.get(bot.guildID).channels.get(bot.channelID).send("Logged In.");
+client.on('ready', () => {
+    console.info('Discord: Logged in.'.bgBlue);
+    client.guilds.get(guildID).channels.get(channelID).send('Logged In.');
 });
 
-var currentPlayers = 0;
-var onlinePlayers = 0;
-var onlineMembers = [];
+let currentPlayers = 0;
+let onlinePlayers = 0;
+let onlineMembers = [];
 
 // Start Minecraft Bot
-let mc = mineflayer.createBot(options);
+const mc = createBot(options);
 
-mc.on("login", () => {
+mc.on('login', () => {
     setTimeout(() => {
-        console.log("Switching to guild chat. (If not already.)");
-        mc.chat("/chat g");
+        console.info('Switching to guild chat. (If not already.)');
+        mc.chat('/chat g');
     }, 1000);
     setTimeout(() => {
-        mc.chat("Logged in");
+        mc.chat('Logged in');
     }, 2000);
     setTimeout(() => {
-        mc.chat("/g online");
+        mc.chat('/g online');
     }, 3000);
     setTimeout(() => {
-        console.log("Sending to limbo.");
-        mc.chat("/achat \u00a7c<3");
+        console.info('Sending to limbo.');
+        mc.chat('/achat \u00a7c<3');
     }, 4000);
 });
 
-// Minecraft > Discord
-mc.on("message", (chatMsg) => {
+// Minecraft -> Discord
+mc.on('message', (chatMsg) => {
     const msg = chatMsg.toString();
-    let msgParts = msg.split(" ");
-    console.log("Minecraft: ".brightGreen + msg);
+    const msgParts = msg.split(' ');
+    console.info('Minecraft: '.brightGreen + msg);
 
-    if (msg.includes("●")) {
-        let listMsg = msg.split("●");
+    if (msg.includes('●')) {
+        let listMsg = msg.split('●');
 
         for (k = 0; k < listMsg.length; k++) {
-            onlineMembers = onlineMembers.concat(listMsg[k].replace(/\[.{1,}\]/g, "").replace(/\s/g, "")).filter(Boolean);
+            onlineMembers = onlineMembers.concat(listMsg[k].replace(/\[.{1,}\]/g, '').replace(/\s/g, '')).filter(Boolean);
         };
     }
 
-    if (msg.startsWith("Guild >")) {
+    if (msg.startsWith('Guild >')) {
         if (msgParts[2].includes(mc.username) || msgParts[3].includes(mc.username)) return;
-        if (msgParts.length == 4 && !msg.includes(":")) {
-            client.guilds.get(bot.guildID).channels.get(bot.channelID).send(msgParts[2] + " " + msgParts[3]);
+        if (msgParts.length == 4 && !msg.includes(':')) {
+            client.guilds.get(guildID).channels.get(channelID).send(msgParts[2] + ' ' + msgParts[3]);
             switch (msgParts[3]) {
-                case "joined.":
+                case 'joined.':
                     onlinePlayers++
                     break;
-                case "left.":
+                case 'left.':
                     onlinePlayers--
                     break;
             }
         } else {
-            let i = msg.indexOf(":");
-            let sentMsg = [msg.slice(0, i), msg.slice(i + 1)];
-            let sender;
-            if (msgParts[2].includes("[")) {
-                sender = msgParts[3].replace(":", "");
-            } else {
-                sender = msgParts[2].replace(":", "");
-            }
+            let i = msg.indexOf(':');
 
-            if (config.useWebhook == true) {
+            let sender;
+            if (msgParts[2].includes('[')) sender = msgParts[3].replace(':', '');
+            else sender = msgParts[2].replace(':', '');
+
+            const sentMsg = [msg.slice(0, i), msg.slice(i + 1)];
+
+            if (useWebhook == true) {
                 webhookClient.send(sentMsg[1], {
-                    disableEveryone: config.mentionEveryone,
+                    disableEveryone: mentionEveryone,
                     username: sender,
                     avatarURL: 'https://www.mc-heads.net/avatar/' + sender,
                 });
             } else {
-                let embed = new discord.RichEmbed()
-                    .setAuthor(sender + ": " + sentMsg[1], "https://www.mc-heads.net/avatar/" + sender)
-                    .setColor("GREEN");
-                client.guilds.get(bot.guildID).channels.get(bot.channelID).send(embed);
+                const embed = new RichEmbed()
+                    .setAuthor(sender + ': ' + sentMsg[1], 'https://www.mc-heads.net/avatar/' + sender)
+                    .setColor('GREEN');
+                client.guilds.get(guildID).channels.get(channelID).send(embed);
             }
         }
     }
 
-    if (msg.startsWith("Online Members")) {
-        onlinePlayers = msgParts[2];
-    }
+    if (msg.startsWith('Online Members')) onlinePlayers = msgParts[2];
 
     if (onlinePlayers !== currentPlayers) {
         client.user.setPresence({
-            status: "online", //You can show online, idle....
+            status: 'online',
             game: {
-                name: onlinePlayers + " guild members", //The message shown
-                type: "WATCHING" //PLAYING: WATCHING: LISTENING: STREAMING:
+                name: onlinePlayers + ' guild members',
+                type: 'WATCHING'
             }
         });
-        currentPlayers = onlinePlayers
+        currentPlayers = onlinePlayers;
     }
 
     // Join/Leave Messages
-    if (msg.includes("the guild") && !msg.includes(":")) {
-        var i;
-        if (msg.startsWith("[")) {
+    if (msg.includes('the guild') && !msg.includes(':')) {
+        let i;
+        if (msg.startsWith('[')) {
             i = 1;
         } else {
             i = 0;
         }
 
         switch (msgParts[i + 1]) {
-            case "joined":
-                client.guilds.get(bot.guildID).channels.get(bot.logChannel).send(msgParts[i] + " joined the guild.");
-                mc.chat("Welcome " + msgParts[i] + "!");
-                onlinePlayers++
+            case 'joined':
+                client.guilds.get(guildID).channels.get(logChannel).send(msgParts[i] + ' joined the guild.');
+                mc.chat('Welcome ' + msgParts[i] + '!');
+                onlinePlayers++;
                 break;
-            case "left":
-                client.guilds.get(bot.guildID).channels.get(bot.logChannel).send(msgParts[i] + " left the guild.");
-                mc.chat("F");
-                onlinePlayers--
+            case 'left':
+                client.guilds.get(guildID).channels.get(logChannel).send(msgParts[i] + ' left the guild.');
+                mc.chat('F');
+                onlinePlayers--;
                 break;
-            case "was":
-                client.guilds.get(bot.guildID).channels.get(bot.logChannel).send(msgParts[i] + " was kicked from the guild by " + msgParts[msgParts.length - 1].replace('!', '.'));
-                mc.chat("L");
-                onlinePlayers--
+            case 'was':
+                client.guilds.get(guildID).channels.get(logChannel).send(msgParts[i] + ' was kicked from the guild by ' + msgParts[msgParts.length - 1].replace('!', '.'));
+                mc.chat('L');
+                onlinePlayers--;
                 break;
         }
     }
     //alfie is editing this
-    if (msg.includes("!verify")) {
+    if (msg.includes('!verify')) {
         if (msgParts[2].includes(mc.username) || msgParts[3].includes(mc.username)) return;
-        var username = msgParts[4];
-        var discTag = msgParts[5];
-        let role = message.guild.roles.find(role => role.name === (config.memberRole));
-        let member = message.mentions.members.first();
+        const username = msgParts[4];
+        const discTag = msgParts[5];
+        const role = message.guild.roles.find(role => role.name === memberRole);
+        const member = message.mentions.members.first();
         member.roles.add(role).catch(console.error);
-        client.guilds.get(bot.guildID).channels.get(bot.logChannel).send(username + " executed the command !verify " + discTag);
-        client.guilds.get(bot.guildID).channels.get(bot.logChannel).send(discTag + " was given the role" + role);
+        client.guilds.get(guildID).channels.get(logChannel).send(username + ' executed the command !verify ' + discTag);
+        client.guilds.get(guildID).channels.get(logChannel).send(discTag + ' was given the role' + role);
 
     }
 
 });
 
 // Error Handling
-mc.on("error", (error) => {
-    console.log("Connection lost.");
-    console.log(error);
-    setTimeout(() => {
-        process.exit(1);
-    }, 10000);
+mc.on('error', (error) => {
+    console.warn('Connection lost.');
+    console.warn(error);
+    setTimeout(() => process.exit(1), 10000);
     if (error === undefined) return;
-    client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("Connection lost with error: " + error);
+    client.guilds.get(guildID).channels.get(logChannel).send('Connection lost with error: ' + error);
 });
 
-mc.on("kicked", (reason) => {
-    console.log("Bot kicked.");
-    console.log(reason);
-    setTimeout(() => {
-        process.exit(1);
-    }, 10000);
+mc.on('kicked', (reason) => {
+    console.warn('Bot kicked.');
+    console.warn(reason);
+    setTimeout(() => process.exit(1), 10000);
     if (reason === undefined) return;
-    client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("Bot kicked with reason: " + reason);
+    client.guilds.get(guildID).channels.get(logChannel).send('Bot kicked with reason: ' + reason);
 });
 
-mc.once("end", (error) => {
-    console.log("Connection ended.");
-    console.log(error);
-    setTimeout(() => {
-        process.exit(1);
-    }, 10000);
+mc.once('end', error => {
+    console.warn('Connection ended.');
+    console.error(error);
+    setTimeout(() => process.exit(1), 10000);
     if (error === undefined) return;
-    client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("Connection ended with error: " + error);
+    client.guilds.get(guildID).channels.get(logChannel).send('Connection ended with error: ' + error);
 });
 
 
-// Discord > Minecraft
-client.on("message", (message) => {
-    if (message.channel.id !== bot.channelID || message.author.bot) return;
+// Discord -> Minecraft
+client.on('message', message => {
+    if (message.channel.id !== channelID || message.author.bot) return;
     let msgParts = message.content.split(' ');
 
-    if (message.content.startsWith(config.prefix)) {
+    if (message.content.startsWith(prefix)) {
         switch (msgParts[0]) {
-            case "-online":
+            case '-online':
                 onlineMembers = []
-                mc.chat("/g online")
+                mc.chat('/g online')
                 setTimeout(() => {
-                    client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The currently online guild members are: " + onlineMembers)
+                    client.guilds.get(guildID).channels.get(channelID).send('The currently online guild members are: ' + onlineMembers)
                 }, 2000);
                 break;
-            case "-logout":
+            case '-logout':
                 process.exit(0);
         }
     } else {
-        console.log("Discord: ".blue + message.author.username + ": " + message.content);
-        mc.chat(client.guilds.get(bot.guildID).member(message.author).displayName + ": " + message.content);
+        console.info('Discord: '.blue + message.author.username + ': ' + message.content);
+        mc.chat(client.guilds.get(guildID).member(message.author).displayName + ': ' + message.content);
     }
 });
 
-client.login(bot.token);
+client.login(token);
