@@ -1,5 +1,6 @@
 import Discord from 'discord.js';
-import { discord as config } from './config/config.json';
+import conf from './config/config.json';
+const config = conf.discord;
 import bridge from './index.js';
 
 const client = new Discord.Client({ autoReconnect: true });

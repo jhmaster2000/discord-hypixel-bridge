@@ -7,9 +7,9 @@ bridge.currentPlayers = 0;
 bridge.onlinePlayers  = 0;
 bridge.onlineMembers  = [];
 
-bridge.guild   = new Guild;
-bridge.channel = new TextChannel;
-bridge.logs    = new TextChannel;
+bridge.guild   = null; //new Guild;
+bridge.channel = null; //new TextChannel;
+bridge.logs    = null; //new TextChannel;
 
 export default bridge;
 

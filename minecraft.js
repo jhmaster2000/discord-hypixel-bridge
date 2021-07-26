@@ -1,9 +1,10 @@
 import Discord from 'discord.js';
 import mineflayer from 'mineflayer';
-import { discord as config, minecraft as mineflayerOptions } from './config/config.json';
 import bridge from './index.js';
+import conf from './config/config.json';
+const config = conf.discord;
 
-const mc = mineflayer.createBot(mineflayerOptions);
+const mc = mineflayer.createBot(conf.minecraft);
 const webhook = new Discord.WebhookClient(config.webhook.id, config.webhook.token);
 
 mc.on('login', () => {
