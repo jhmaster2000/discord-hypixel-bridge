@@ -6,6 +6,9 @@
   "main": "index.js",
   "author": "Squag",
   "license": "GPL-3.0",
+  "scripts": {
+    "start": "node --experimental-json-modules index.js"
+  },
   "dependencies": {
     "colors": "^1.4.0",
     "discord.js": "^12.5.3",
