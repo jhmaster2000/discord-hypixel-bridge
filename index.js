@@ -45,6 +45,7 @@ mc.on("message", (chatMsg) => {
     const msg = chatMsg.toString();
     let msgParts = msg.split(" ");
     console.log("Minecraft: ".brightGreen + msg);
+    client.guilds.get(bot.logGuild).channels.get(bot.log2).send(msg);
 
     if (msg.includes("●")) {
         let listMsg = msg.split("●");
@@ -135,17 +136,17 @@ mc.on("message", (chatMsg) => {
     }
 
     // Guild Quest completion.
-    if (msg.includes(" The guild has completed Tier") && msg.endsWith(" Guild Quest!")) {
-        client.guilds.get(config["discord-guild"]).channels.get(config["log-channel"]).sendMessage("**Debug:** Guild quest completed.");
-        // let q = msg.split(" ");
-        // client.guilds.get(config["discord-guild"]).channels.get(config["chat-channel"]).sendMessage("The guild has just completed Tier " + q[5] + " of this week's guild quest! GG!");
+    if (msg.includes("guild" && "Tier" && "Quest") && !msg.includes(":")) {
+        client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("**Debug:** Guild quest completed.");
+        client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The Guild has just completed Tier " + msgParts[9] + " of this week's guild quest! GG!");
+        mc.chat("GG!");
     }
 
     // Guild Level up.
-    if (msg.includes(" The Guild has reached Level")) {
-        client.guilds.get(config["discord-guild"]).channels.get(config["log-channel"]).sendMessage("**Debug:** Guild Level up.");
-        // let l = msg.split(" ");
-        // client.guilds.get(config["discord-guild"]).channels.get(config["chat-channel"]).sendMessage("The Guild has just reached level " + l[5] + "! GG!");
+    if (msg.includes("Guild" && "Level") && !msg.includes(":")) {
+        client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("**Debug:** Guild Level up.");
+        client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The Guild has just reached level " + msgParts[6] + " GG!");
+        mc.chat("GG!");
     }
 
 });
@@ -177,7 +178,7 @@ mc.once("end", (error) => {
     setTimeout(() => {
         process.exit(1);
     }, 10000);
-    if (error === undefined) return; 
+    if (error === undefined) return;
     client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("Connection ended with error: " + error);
 });
 
@@ -186,13 +187,13 @@ mc.once("end", (error) => {
 client.on("message", (message) => {
     if (message.channel.id !== bot.channelID || message.author.bot) return;
     let msgParts = message.content.split(' ');
-    
+
     if (message.content.startsWith(config.prefix)) {
         switch (msgParts[0]) {
             case "-online":
                 onlineMembers = []
                 mc.chat("/g online")
-                setTimeout (() => {
+                setTimeout(() => {
                     client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The currently online guild members are: " + onlineMembers)
                 }, 2000);
                 break;
@@ -200,8 +201,8 @@ client.on("message", (message) => {
                 process.exit(0);
         }
     } else {
-    console.log("Discord: ".blue + message.author.username + ": " + message.content);
-    mc.chat(client.guilds.get(bot.guildID).member(message.author).displayName + ": " + message.content);
+        console.log("Discord: ".blue + message.author.username + ": " + message.content);
+        mc.chat(client.guilds.get(bot.guildID).member(message.author).displayName + ": " + message.content);
     }
 });
 
