@@ -45,7 +45,6 @@ mc.on("message", (chatMsg) => {
     const msg = chatMsg.toString();
     let msgParts = msg.split(" ");
     console.log("Minecraft: ".brightGreen + msg);
-    client.guilds.get(bot.logGuild).channels.get(bot.log2).send(msg);
 
     if (msg.includes("●")) {
         let listMsg = msg.split("●");
@@ -137,15 +136,13 @@ mc.on("message", (chatMsg) => {
 
     // Guild Quest completion.
     if (msg.includes("guild" && "Tier" && "Quest") && !msg.includes(":")) {
-        client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("**Debug:** Guild quest completed.");
         client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The Guild has just completed Tier " + msgParts[9] + " of this week's guild quest! GG!");
         mc.chat("GG!");
     }
 
     // Guild Level up.
     if (msg.includes("Guild" && "Level") && !msg.includes(":")) {
-        client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("**Debug:** Guild Level up.");
-        client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The Guild has just reached level " + msgParts[6] + " GG!");
+        client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The Guild has just reached level " + msgParts[msgParts.length - 1].replace('!','') + " GG!");
         mc.chat("GG!");
     }
 
@@ -197,8 +194,6 @@ client.on("message", (message) => {
                     client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The currently online guild members are: " + onlineMembers)
                 }, 2000);
                 break;
-            case "-logout":
-                process.exit(0);
         }
     } else {
         console.log("Discord: ".blue + message.author.username + ": " + message.content);
