@@ -133,6 +133,19 @@ mc.on("message", (chatMsg) => {
                 break;
         }
     }
+
+    // Guild Quest completion.
+    if (msg.includes("guild" && "Tier" && "Quest") && !msg.includes(":")) {
+        client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The Guild has just completed Tier " + msgParts[9] + " of this week's guild quest! GG!");
+        mc.chat("GG!");
+    }
+
+    // Guild Level up.
+    if (msg.includes("Guild" && "Level") && !msg.includes(":")) {
+        client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The Guild has just reached level " + msgParts[msgParts.length - 1].replace('!','') + " GG!");
+        mc.chat("GG!");
+    }
+
 });
 
 // Error Handling
@@ -162,7 +175,7 @@ mc.once("end", (error) => {
     setTimeout(() => {
         process.exit(1);
     }, 10000);
-    if (error === undefined) return; 
+    if (error === undefined) return;
     client.guilds.get(bot.guildID).channels.get(bot.logChannel).send("Connection ended with error: " + error);
 });
 
@@ -171,22 +184,20 @@ mc.once("end", (error) => {
 client.on("message", (message) => {
     if (message.channel.id !== bot.channelID || message.author.bot) return;
     let msgParts = message.content.split(' ');
-    
+
     if (message.content.startsWith(config.prefix)) {
         switch (msgParts[0]) {
             case "-online":
                 onlineMembers = []
                 mc.chat("/g online")
-                setTimeout (() => {
+                setTimeout(() => {
                     client.guilds.get(bot.guildID).channels.get(bot.channelID).send("The currently online guild members are: " + onlineMembers)
                 }, 2000);
                 break;
-            case "-logout":
-                process.exit(0);
         }
     } else {
-    console.log("Discord: ".blue + message.author.username + ": " + message.content);
-    mc.chat(client.guilds.get(bot.guildID).member(message.author).displayName + ": " + message.content);
+        console.log("Discord: ".blue + message.author.username + ": " + message.content);
+        mc.chat(client.guilds.get(bot.guildID).member(message.author).displayName + ": " + message.content);
     }
 });
 
