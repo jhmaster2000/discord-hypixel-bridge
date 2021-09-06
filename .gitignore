@@ -90,6 +90,4 @@ typings/
 # Project Files
 .idea/
 config.json
-discord.json
-minecraft.json
-package-lock.json
+launcher_accounts.json

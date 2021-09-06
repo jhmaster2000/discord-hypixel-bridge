@@ -1,6 +1,28 @@
 {
-  "useWebhook": false,
-  "mentionEveryone": false,
+  "discord": {
+    "token": "Discord Bot Token",
+    "prefix": "Discord Bot Prefix",
 
-  "prefix": "-" 
+    "guildID": "Discord Server ID",
+    "channelID": "Discord Channel ID",
+    "logChannel": "Discord Channel ID",
+    
+    "_comment": "The first part of a webhook URL is the ID, the second/longer part is the token.",
+    "webhook": {
+      "enabled": false,
+      "id": "Discord Webhook ID",
+      "token": "Discord Webhook Token"
+    }
+},
+
+  "_comment": "You shouldn't need to change anything that is already configured below.",
+  "minecraft": { 
+    "host": "hypixel.net",
+    "auth": "Auth type: mojang/microsoft",
+    "version": "1.8.9",
+    "username": "Mojang/Microsoft Email address",
+    "password": "Account password",
+    "viewDistance": "tiny",
+    "chatLengthLimit": "256"
+  }
 }
