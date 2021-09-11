@@ -159,9 +159,9 @@ client.on("messageCreate", (message) => {
 
     if (message.content.startsWith(bot.prefix)) {
         switch (msgParts[0]) {
-            case "-online":
+            case `${bot.prefix}online`:
                 onlineMembers = []
-                mc.chat("/gonline")
+                mc.chat("/g online")
                 setTimeout(() => channel.send("The currently online guild members are: " + onlineMembers), 2000);
                 break;
         }
